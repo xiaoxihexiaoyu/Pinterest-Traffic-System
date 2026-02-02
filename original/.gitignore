@@ -1,0 +1,11 @@
+# DS_Store
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Thumbnails
+._*
+
+# Files that might contain personal information
+*.url
+*.txt
