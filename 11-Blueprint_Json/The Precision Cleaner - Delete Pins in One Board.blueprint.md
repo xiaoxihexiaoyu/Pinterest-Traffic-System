@@ -1,0 +1,1390 @@
+# 精准清理器 - 删除单个 Board 中的 Pin
+
+---
+
+**Blueprint ID**: `N/A`
+**Name**: The Precision Cleaner - Delete Pins in One Board
+**Description**: N/A
+**Version**: N/A
+
+## Metadata / 元数据
+
+- **instant**: False
+- **version**: 1
+- **scenario**: {'roundtrips': 1, 'maxErrors': 3, 'autoCommit': True, 'autoCommitTriggerLast': True, 'sequential': False, 'slots': None, 'confidential': False, 'dataloss': False, 'dlq': False, 'freshVariables': False}
+- **designer**: {'orphans': []}
+- **zone**: us2.make.com
+- **notes**: [{'moduleIds': [44], 'content': '<p>Select the Board you want to check.</p>', 'isFilterNote': False, 'metadata': {'color': '#9138FE'}}, {'moduleIds': [33], 'content': "<p>Here you can set the criteria for which pins should be deleted.</p><p></p><p><strong>Important:</strong></p><p>Don't forget to set the same filter setting in the upper path as well!</p>", 'isFilterNote': True, 'metadata': {'color': '#9138FE'}}, {'moduleIds': [12], 'content': "<p>Here you can set the criteria for which pins should be deleted.</p><p></p><p><strong>Important:</strong></p><p>Don't forget to set the same filter setting in the lower path as well!</p>", 'isFilterNote': True, 'metadata': {'color': '#9138FE'}}, {'moduleIds': [24], 'content': '<p>The maximum number of pins that can be processed per board results from the number of "Repeats" x number of "Pins per request" (usually 250).</p><p>Example: 5 x 250 = 1250 pins / board</p>', 'isFilterNote': False, 'metadata': {'color': '#9138FE'}}, {'moduleIds': [31], 'content': '<p>In case of timeout errors from pinterest, sleep for a while and then resume</p>', 'isFilterNote': False, 'metadata': {'color': '#9138FE'}}, {'moduleIds': [29], 'content': '<p>In case of timeout errors from pinterest, sleep for a while and then resume</p>', 'isFilterNote': False, 'metadata': {'color': '#9138FE'}}, {'moduleIds': [39], 'content': '<p>When no bookmark was given --&gt; Break the Reapeater Loop</p>', 'isFilterNote': False, 'metadata': {'color': '#9138FE'}}]
+
+## Raw JSON (for reference) / 原始 JSON（供参考）
+
+```json
+{
+  "name": "The Precision Cleaner - Delete Pins in One Board",
+  "flow": [
+    {
+      "id": 44,
+      "module": "pinterest:getABoard",
+      "version": 2,
+      "parameters": {
+        "__IMTCONN__": 33029
+      },
+      "mapper": {
+        "board_id": "918171511470129279"
+      },
+      "metadata": {
+        "designer": {
+          "x": 0,
+          "y": 750
+        },
+        "restore": {
+          "parameters": {
+            "__IMTCONN__": {
+              "label": "pinterest Acc",
+              "data": {
+                "scoped": "true",
+                "connection": "pinterest2"
+              }
+            }
+          },
+          "expect": {
+            "board_id": {
+              "mode": "chose",
+              "label": "idea"
+            },
+            "ad_account_id": {
+              "mode": "chose"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "__IMTCONN__",
+            "type": "account:pinterest2",
+            "label": "Connection",
+            "required": true
+          }
+        ],
+        "expect": [
+          {
+            "name": "board_id",
+            "type": "select",
+            "label": "Board",
+            "mode": "edit",
+            "required": true
+          },
+          {
+            "name": "ad_account_id",
+            "type": "select",
+            "label": "Ad Account"
+          }
+        ]
+      }
+    },
+    {
+      "id": 24,
+      "module": "util:SetVariables",
+      "version": 1,
+      "parameters": {},
+      "mapper": {
+        "variables": [
+          {
+            "name": "Repeats",
+            "value": "5"
+          },
+          {
+            "name": "Pins per request",
+            "value": "250"
+          }
+        ],
+        "scope": "roundtrip"
+      },
+      "metadata": {
+        "designer": {
+          "x": 300,
+          "y": 750
+        },
+        "restore": {
+          "expect": {
+            "variables": {
+              "items": [
+                null,
+                null
+              ]
+            },
+            "scope": {
+              "label": "One cycle"
+            }
+          }
+        },
+        "expect": [
+          {
+            "name": "variables",
+            "type": "array",
+            "label": "Variables",
+            "spec": [
+              {
+                "name": "name",
+                "label": "Variable name",
+                "type": "text",
+                "required": true
+              },
+              {
+                "name": "value",
+                "label": "Variable value",
+                "type": "any"
+              }
+            ]
+          },
+          {
+            "name": "scope",
+            "type": "select",
+            "label": "Variable lifetime",
+            "required": true,
+            "validate": {
+              "enum": [
+                "roundtrip",
+                "execution"
+              ]
+            }
+          }
+        ],
+        "interface": [
+          {
+            "name": "Repeats",
+            "label": "Repeats",
+            "type": "any"
+          },
+          {
+            "name": "Pins per request",
+            "label": "Pins per request",
+            "type": "any"
+          }
+        ]
+      }
+    },
+    {
+      "id": 16,
+      "module": "builtin:BasicRepeater",
+      "version": 1,
+      "parameters": {},
+      "mapper": {
+        "step": "1",
+        "start": "1",
+        "repeats": "{{24.Repeats}}"
+      },
+      "metadata": {
+        "designer": {
+          "x": 600,
+          "y": 750
+        },
+        "restore": {},
+        "expect": [
+          {
+            "name": "start",
+            "type": "number",
+            "label": "Initial value",
+            "required": true
+          },
+          {
+            "name": "repeats",
+            "type": "number",
+            "label": "Repeats",
+            "required": true,
+            "validate": {
+              "max": 10000,
+              "min": 0
+            }
+          },
+          {
+            "name": "step",
+            "type": "number",
+            "label": "Step",
+            "required": true
+          }
+        ]
+      }
+    },
+    {
+      "id": 18,
+      "module": "util:GetVariables",
+      "version": 1,
+      "parameters": {},
+      "mapper": {
+        "variables": [
+          "bookmark"
+        ]
+      },
+      "metadata": {
+        "designer": {
+          "x": 900,
+          "y": 750,
+          "name": "Get bookmark"
+        },
+        "restore": {
+          "expect": {
+            "variables": {
+              "items": [
+                null
+              ]
+            }
+          }
+        },
+        "expect": [
+          {
+            "name": "variables",
+            "spec": {
+              "name": "value",
+              "type": "text",
+              "label": "Variable name",
+              "required": true
+            },
+            "type": "array",
+            "label": "Variables"
+          }
+        ],
+        "interface": [
+          {
+            "name": "bookmark",
+            "type": "any",
+            "label": "bookmark"
+          }
+        ]
+      }
+    },
+    {
+      "id": 17,
+      "module": "builtin:BasicRouter",
+      "version": 1,
+      "mapper": null,
+      "metadata": {
+        "designer": {
+          "x": 1200,
+          "y": 750
+        }
+      },
+      "routes": [
+        {
+          "flow": [
+            {
+              "id": 7,
+              "module": "pinterest:makeAnApiCall",
+              "version": 2,
+              "parameters": {
+                "__IMTCONN__": 33029
+              },
+              "filter": {
+                "name": "first run",
+                "conditions": [
+                  [
+                    {
+                      "a": "{{16.i}}",
+                      "b": "1",
+                      "o": "text:equal"
+                    }
+                  ]
+                ]
+              },
+              "mapper": {
+                "url": "/v5/boards/{{44.id}}/pins",
+                "method": "GET",
+                "headers": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "qs": [
+                  {
+                    "key": "pin_metrics",
+                    "value": "true"
+                  },
+                  {
+                    "key": "page_size",
+                    "value": "{{24.`Pins per request`}}"
+                  }
+                ]
+              },
+              "metadata": {
+                "designer": {
+                  "x": 1500,
+                  "y": 300,
+                  "name": "Get 250 Pins"
+                },
+                "restore": {
+                  "parameters": {
+                    "__IMTCONN__": {
+                      "label": "pinterest Acc",
+                      "data": {
+                        "scoped": "true",
+                        "connection": "pinterest2"
+                      }
+                    }
+                  },
+                  "expect": {
+                    "method": {
+                      "mode": "chose",
+                      "label": "GET"
+                    },
+                    "headers": {
+                      "mode": "chose",
+                      "collapsed": true,
+                      "items": [
+                        null,
+                        null
+                      ]
+                    },
+                    "qs": {
+                      "mode": "chose",
+                      "items": [
+                        null,
+                        null
+                      ]
+                    },
+                    "body": {
+                      "collapsed": true
+                    }
+                  }
+                },
+                "parameters": [
+                  {
+                    "name": "__IMTCONN__",
+                    "type": "account:pinterest2",
+                    "label": "Connection",
+                    "required": true
+                  }
+                ],
+                "expect": [
+                  {
+                    "name": "url",
+                    "type": "text",
+                    "label": "URL",
+                    "required": true
+                  },
+                  {
+                    "name": "method",
+                    "type": "select",
+                    "label": "Method",
+                    "required": true,
+                    "validate": {
+                      "enum": [
+                        "GET",
+                        "POST",
+                        "PUT",
+                        "PATCH",
+                        "DELETE"
+                      ]
+                    }
+                  },
+                  {
+                    "name": "headers",
+                    "type": "array",
+                    "label": "Headers",
+                    "spec": [
+                      {
+                        "name": "key",
+                        "type": "text",
+                        "label": "Key"
+                      },
+                      {
+                        "name": "value",
+                        "type": "text",
+                        "label": "Value"
+                      }
+                    ]
+                  },
+                  {
+                    "name": "qs",
+                    "type": "array",
+                    "label": "Query String",
+                    "spec": [
+                      {
+                        "name": "key",
+                        "type": "text",
+                        "label": "Key"
+                      },
+                      {
+                        "name": "value",
+                        "type": "text",
+                        "label": "Value"
+                      }
+                    ]
+                  },
+                  {
+                    "name": "body",
+                    "type": "any",
+                    "label": "Body"
+                  }
+                ]
+              }
+            },
+            {
+              "id": 35,
+              "module": "builtin:BasicRouter",
+              "version": 1,
+              "mapper": null,
+              "metadata": {
+                "designer": {
+                  "x": 1800,
+                  "y": 300
+                }
+              },
+              "routes": [
+                {
+                  "flow": [
+                    {
+                      "id": 9,
+                      "module": "builtin:BasicFeeder",
+                      "version": 1,
+                      "parameters": {},
+                      "mapper": {
+                        "array": "{{7.body.items}}"
+                      },
+                      "metadata": {
+                        "designer": {
+                          "x": 2100,
+                          "y": 0,
+                          "name": "Run filter for each pin"
+                        },
+                        "restore": {
+                          "expect": {
+                            "array": {
+                              "mode": "edit"
+                            }
+                          }
+                        },
+                        "expect": [
+                          {
+                            "mode": "edit",
+                            "name": "array",
+                            "spec": [],
+                            "type": "array",
+                            "label": "Array"
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "id": 12,
+                      "module": "pinterest:deletePin",
+                      "version": 2,
+                      "parameters": {
+                        "__IMTCONN__": 33029
+                      },
+                      "filter": {
+                        "name": "Filter",
+                        "conditions": [
+                          [
+                            {
+                              "a": "{{9.pin_metrics.lifetime_metrics.impression}}",
+                              "o": "number:equal",
+                              "b": "0"
+                            },
+                            {
+                              "a": "{{9.created_at}}",
+                              "o": "date:less",
+                              "b": "{{addDays(now; -90)}}"
+                            }
+                          ]
+                        ]
+                      },
+                      "mapper": {
+                        "pin_id": "{{9.id}}"
+                      },
+                      "metadata": {
+                        "designer": {
+                          "x": 2400,
+                          "y": 0,
+                          "name": "Delete pin when passed the filter"
+                        },
+                        "restore": {
+                          "parameters": {
+                            "__IMTCONN__": {
+                              "label": "pinterest Acc",
+                              "data": {
+                                "scoped": "true",
+                                "connection": "pinterest2"
+                              }
+                            }
+                          },
+                          "expect": {
+                            "pin_id": {
+                              "mode": "edit"
+                            },
+                            "ad_account_id": {
+                              "mode": "chose"
+                            }
+                          }
+                        },
+                        "parameters": [
+                          {
+                            "name": "__IMTCONN__",
+                            "type": "account:pinterest2",
+                            "label": "Connection",
+                            "required": true
+                          }
+                        ],
+                        "expect": [
+                          {
+                            "mode": "edit",
+                            "name": "pin_id",
+                            "type": "select",
+                            "label": "Pin",
+                            "required": true
+                          },
+                          {
+                            "name": "ad_account_id",
+                            "type": "select",
+                            "label": "Ad Account"
+                          }
+                        ]
+                      },
+                      "onerror": [
+                        {
+                          "id": 29,
+                          "module": "util:FunctionSleep",
+                          "version": 1,
+                          "parameters": {},
+                          "mapper": {
+                            "duration": "100"
+                          },
+                          "metadata": {
+                            "designer": {
+                              "x": 2700,
+                              "y": 0
+                            },
+                            "restore": {},
+                            "expect": [
+                              {
+                                "name": "duration",
+                                "type": "uinteger",
+                                "label": "Delay",
+                                "required": true,
+                                "validate": {
+                                  "max": 300,
+                                  "min": 1
+                                }
+                              }
+                            ]
+                          }
+                        },
+                        {
+                          "id": 30,
+                          "module": "builtin:Resume",
+                          "version": 1,
+                          "parameters": {},
+                          "mapper": {},
+                          "metadata": {
+                            "designer": {
+                              "x": 3000,
+                              "y": 0
+                            },
+                            "restore": {}
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "flow": [
+                    {
+                      "id": 15,
+                      "module": "util:SetVariables",
+                      "version": 1,
+                      "parameters": {},
+                      "filter": {
+                        "name": "Got a bookmark?",
+                        "conditions": [
+                          [
+                            {
+                              "a": "{{7.body.bookmark}}",
+                              "b": "{{emptystring}}",
+                              "o": "text:notequal"
+                            }
+                          ]
+                        ]
+                      },
+                      "mapper": {
+                        "scope": "roundtrip",
+                        "variables": [
+                          {
+                            "name": "bookmark",
+                            "value": "{{7.body.bookmark}}"
+                          }
+                        ]
+                      },
+                      "metadata": {
+                        "designer": {
+                          "x": 2100,
+                          "y": 300,
+                          "name": "Save bookmark for next repeat"
+                        },
+                        "restore": {
+                          "expect": {
+                            "scope": {
+                              "label": "One cycle"
+                            },
+                            "variables": {
+                              "items": [
+                                null
+                              ]
+                            }
+                          }
+                        },
+                        "expect": [
+                          {
+                            "name": "variables",
+                            "spec": [
+                              {
+                                "name": "name",
+                                "type": "text",
+                                "label": "Variable name",
+                                "required": true
+                              },
+                              {
+                                "name": "value",
+                                "type": "any",
+                                "label": "Variable value"
+                              }
+                            ],
+                            "type": "array",
+                            "label": "Variables"
+                          },
+                          {
+                            "name": "scope",
+                            "type": "select",
+                            "label": "Variable lifetime",
+                            "required": true,
+                            "validate": {
+                              "enum": [
+                                "roundtrip",
+                                "execution"
+                              ]
+                            }
+                          }
+                        ],
+                        "interface": [
+                          {
+                            "name": "bookmark",
+                            "type": "any",
+                            "label": "bookmark"
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                },
+                {
+                  "flow": [
+                    {
+                      "id": 39,
+                      "module": "util:SetVariables",
+                      "version": 1,
+                      "parameters": {},
+                      "filter": {
+                        "name": "Got no bookmark?",
+                        "conditions": [
+                          [
+                            {
+                              "a": "{{7.body.bookmark}}",
+                              "b": "{{emptystring}}",
+                              "o": "text:equal"
+                            }
+                          ]
+                        ]
+                      },
+                      "mapper": {
+                        "scope": "roundtrip",
+                        "variables": [
+                          {
+                            "name": "bookmark",
+                            "value": "{{emptystring}}"
+                          }
+                        ]
+                      },
+                      "metadata": {
+                        "designer": {
+                          "x": 2100,
+                          "y": 600,
+                          "name": "Clear bookmark"
+                        },
+                        "restore": {
+                          "expect": {
+                            "scope": {
+                              "label": "One cycle"
+                            },
+                            "variables": {
+                              "items": [
+                                null
+                              ]
+                            }
+                          }
+                        },
+                        "expect": [
+                          {
+                            "name": "variables",
+                            "spec": [
+                              {
+                                "name": "name",
+                                "type": "text",
+                                "label": "Variable name",
+                                "required": true
+                              },
+                              {
+                                "name": "value",
+                                "type": "any",
+                                "label": "Variable value"
+                              }
+                            ],
+                            "type": "array",
+                            "label": "Variables"
+                          },
+                          {
+                            "name": "scope",
+                            "type": "select",
+                            "label": "Variable lifetime",
+                            "required": true,
+                            "validate": {
+                              "enum": [
+                                "roundtrip",
+                                "execution"
+                              ]
+                            }
+                          }
+                        ],
+                        "interface": [
+                          {
+                            "name": "bookmark",
+                            "type": "any",
+                            "label": "bookmark"
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "flow": [
+            {
+              "id": 20,
+              "module": "pinterest:makeAnApiCall",
+              "version": 2,
+              "parameters": {
+                "__IMTCONN__": 33029
+              },
+              "filter": {
+                "name": "further runs",
+                "conditions": [
+                  [
+                    {
+                      "a": "{{16.i}}",
+                      "b": "1",
+                      "o": "number:greater"
+                    },
+                    {
+                      "a": "{{18.bookmark}}",
+                      "b": "{{emptystring}}",
+                      "o": "text:notequal"
+                    }
+                  ]
+                ]
+              },
+              "mapper": {
+                "url": "/v5/boards/{{44.id}}/pins",
+                "method": "GET",
+                "headers": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "qs": [
+                  {
+                    "key": "pin_metrics",
+                    "value": "true"
+                  },
+                  {
+                    "key": "page_size",
+                    "value": "{{24.`Pins per request`}}"
+                  },
+                  {
+                    "key": "bookmark",
+                    "value": "{{18.bookmark}}"
+                  }
+                ]
+              },
+              "metadata": {
+                "designer": {
+                  "x": 1500,
+                  "y": 1200,
+                  "name": "Get 250 Pins"
+                },
+                "restore": {
+                  "parameters": {
+                    "__IMTCONN__": {
+                      "label": "pinterest Acc",
+                      "data": {
+                        "scoped": "true",
+                        "connection": "pinterest2"
+                      }
+                    }
+                  },
+                  "expect": {
+                    "method": {
+                      "mode": "chose",
+                      "label": "GET"
+                    },
+                    "headers": {
+                      "mode": "chose",
+                      "collapsed": true,
+                      "items": [
+                        null,
+                        null
+                      ]
+                    },
+                    "qs": {
+                      "mode": "chose",
+                      "items": [
+                        null,
+                        null,
+                        null
+                      ]
+                    },
+                    "body": {
+                      "collapsed": true
+                    }
+                  }
+                },
+                "parameters": [
+                  {
+                    "name": "__IMTCONN__",
+                    "type": "account:pinterest2",
+                    "label": "Connection",
+                    "required": true
+                  }
+                ],
+                "expect": [
+                  {
+                    "name": "url",
+                    "type": "text",
+                    "label": "URL",
+                    "required": true
+                  },
+                  {
+                    "name": "method",
+                    "type": "select",
+                    "label": "Method",
+                    "required": true,
+                    "validate": {
+                      "enum": [
+                        "GET",
+                        "POST",
+                        "PUT",
+                        "PATCH",
+                        "DELETE"
+                      ]
+                    }
+                  },
+                  {
+                    "name": "headers",
+                    "type": "array",
+                    "label": "Headers",
+                    "spec": [
+                      {
+                        "name": "key",
+                        "type": "text",
+                        "label": "Key"
+                      },
+                      {
+                        "name": "value",
+                        "type": "text",
+                        "label": "Value"
+                      }
+                    ]
+                  },
+                  {
+                    "name": "qs",
+                    "type": "array",
+                    "label": "Query String",
+                    "spec": [
+                      {
+                        "name": "key",
+                        "type": "text",
+                        "label": "Key"
+                      },
+                      {
+                        "name": "value",
+                        "type": "text",
+                        "label": "Value"
+                      }
+                    ]
+                  },
+                  {
+                    "name": "body",
+                    "type": "any",
+                    "label": "Body"
+                  }
+                ]
+              }
+            },
+            {
+              "id": 41,
+              "module": "builtin:BasicRouter",
+              "version": 1,
+              "mapper": null,
+              "metadata": {
+                "designer": {
+                  "x": 1800,
+                  "y": 1200
+                }
+              },
+              "routes": [
+                {
+                  "flow": [
+                    {
+                      "id": 32,
+                      "module": "builtin:BasicFeeder",
+                      "version": 1,
+                      "parameters": {},
+                      "mapper": {
+                        "array": "{{20.body.items}}"
+                      },
+                      "metadata": {
+                        "designer": {
+                          "x": 2100,
+                          "y": 900,
+                          "name": "Run filter for each pin"
+                        },
+                        "restore": {
+                          "expect": {
+                            "array": {
+                              "mode": "edit"
+                            }
+                          }
+                        },
+                        "expect": [
+                          {
+                            "mode": "edit",
+                            "name": "array",
+                            "spec": [],
+                            "type": "array",
+                            "label": "Array"
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "id": 33,
+                      "module": "pinterest:deletePin",
+                      "version": 2,
+                      "parameters": {
+                        "__IMTCONN__": 33029
+                      },
+                      "filter": {
+                        "name": "Filter",
+                        "conditions": [
+                          [
+                            {
+                              "a": "{{32.pin_metrics.lifetime_metrics.impression}}",
+                              "o": "number:equal",
+                              "b": "0"
+                            },
+                            {
+                              "a": "{{32.created_at}}",
+                              "o": "date:less",
+                              "b": "{{addDays(now; -90)}}"
+                            }
+                          ]
+                        ]
+                      },
+                      "mapper": {
+                        "pin_id": "{{32.id}}"
+                      },
+                      "metadata": {
+                        "designer": {
+                          "x": 2400,
+                          "y": 900,
+                          "name": "Delete pin when passed the filter"
+                        },
+                        "restore": {
+                          "parameters": {
+                            "__IMTCONN__": {
+                              "label": "pinterest Acc",
+                              "data": {
+                                "scoped": "true",
+                                "connection": "pinterest2"
+                              }
+                            }
+                          },
+                          "expect": {
+                            "pin_id": {
+                              "mode": "edit"
+                            },
+                            "ad_account_id": {
+                              "mode": "chose"
+                            }
+                          }
+                        },
+                        "parameters": [
+                          {
+                            "name": "__IMTCONN__",
+                            "type": "account:pinterest2",
+                            "label": "Connection",
+                            "required": true
+                          }
+                        ],
+                        "expect": [
+                          {
+                            "mode": "edit",
+                            "name": "pin_id",
+                            "type": "select",
+                            "label": "Pin",
+                            "required": true
+                          },
+                          {
+                            "name": "ad_account_id",
+                            "type": "select",
+                            "label": "Ad Account"
+                          }
+                        ]
+                      },
+                      "onerror": [
+                        {
+                          "id": 31,
+                          "module": "util:FunctionSleep",
+                          "version": 1,
+                          "parameters": {},
+                          "mapper": {
+                            "duration": "100"
+                          },
+                          "metadata": {
+                            "designer": {
+                              "x": 2700,
+                              "y": 900
+                            },
+                            "restore": {},
+                            "expect": [
+                              {
+                                "name": "duration",
+                                "type": "uinteger",
+                                "label": "Delay",
+                                "required": true,
+                                "validate": {
+                                  "max": 300,
+                                  "min": 1
+                                }
+                              }
+                            ]
+                          }
+                        },
+                        {
+                          "id": 28,
+                          "module": "builtin:Resume",
+                          "version": 1,
+                          "parameters": {},
+                          "mapper": {},
+                          "metadata": {
+                            "designer": {
+                              "x": 3000,
+                              "y": 900
+                            },
+                            "restore": {}
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "flow": [
+                    {
+                      "id": 42,
+                      "module": "util:SetVariables",
+                      "version": 1,
+                      "parameters": {},
+                      "filter": {
+                        "name": "Got a Bookmark?",
+                        "conditions": [
+                          [
+                            {
+                              "a": "{{20.body.bookmark}}",
+                              "o": "text:notequal",
+                              "b": "{{emptystring}}"
+                            }
+                          ]
+                        ]
+                      },
+                      "mapper": {
+                        "scope": "roundtrip",
+                        "variables": [
+                          {
+                            "name": "bookmark",
+                            "value": "{{20.body.bookmark}}"
+                          }
+                        ]
+                      },
+                      "metadata": {
+                        "designer": {
+                          "x": 2100,
+                          "y": 1200,
+                          "name": "Save bookmark for next repeat"
+                        },
+                        "restore": {
+                          "expect": {
+                            "scope": {
+                              "label": "One cycle"
+                            },
+                            "variables": {
+                              "items": [
+                                null
+                              ]
+                            }
+                          }
+                        },
+                        "expect": [
+                          {
+                            "name": "variables",
+                            "spec": [
+                              {
+                                "name": "name",
+                                "type": "text",
+                                "label": "Variable name",
+                                "required": true
+                              },
+                              {
+                                "name": "value",
+                                "type": "any",
+                                "label": "Variable value"
+                              }
+                            ],
+                            "type": "array",
+                            "label": "Variables"
+                          },
+                          {
+                            "name": "scope",
+                            "type": "select",
+                            "label": "Variable lifetime",
+                            "required": true,
+                            "validate": {
+                              "enum": [
+                                "roundtrip",
+                                "execution"
+                              ]
+                            }
+                          }
+                        ],
+                        "interface": [
+                          {
+                            "name": "bookmark",
+                            "type": "any",
+                            "label": "bookmark"
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                },
+                {
+                  "flow": [
+                    {
+                      "id": 43,
+                      "module": "util:SetVariables",
+                      "version": 1,
+                      "parameters": {},
+                      "filter": {
+                        "name": "Got no bookmark?",
+                        "conditions": [
+                          [
+                            {
+                              "a": "{{20.body.bookmark}}",
+                              "o": "text:equal",
+                              "b": "{{emptystring}}"
+                            }
+                          ]
+                        ]
+                      },
+                      "mapper": {
+                        "scope": "roundtrip",
+                        "variables": [
+                          {
+                            "name": "bookmark",
+                            "value": "{{emptystring}}"
+                          }
+                        ]
+                      },
+                      "metadata": {
+                        "designer": {
+                          "x": 2100,
+                          "y": 1500,
+                          "name": "Clear bookmark"
+                        },
+                        "restore": {
+                          "expect": {
+                            "scope": {
+                              "label": "One cycle"
+                            },
+                            "variables": {
+                              "items": [
+                                null
+                              ]
+                            }
+                          }
+                        },
+                        "expect": [
+                          {
+                            "name": "variables",
+                            "spec": [
+                              {
+                                "name": "name",
+                                "type": "text",
+                                "label": "Variable name",
+                                "required": true
+                              },
+                              {
+                                "name": "value",
+                                "type": "any",
+                                "label": "Variable value"
+                              }
+                            ],
+                            "type": "array",
+                            "label": "Variables"
+                          },
+                          {
+                            "name": "scope",
+                            "type": "select",
+                            "label": "Variable lifetime",
+                            "required": true,
+                            "validate": {
+                              "enum": [
+                                "roundtrip",
+                                "execution"
+                              ]
+                            }
+                          }
+                        ],
+                        "interface": [
+                          {
+                            "name": "bookmark",
+                            "type": "any",
+                            "label": "bookmark"
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "metadata": {
+    "instant": false,
+    "version": 1,
+    "scenario": {
+      "roundtrips": 1,
+      "maxErrors": 3,
+      "autoCommit": true,
+      "autoCommitTriggerLast": true,
+      "sequential": false,
+      "slots": null,
+      "confidential": false,
+      "dataloss": false,
+      "dlq": false,
+      "freshVariables": false
+    },
+    "designer": {
+      "orphans": []
+    },
+    "zone": "us2.make.com",
+    "notes": [
+      {
+        "moduleIds": [
+          44
+        ],
+        "content": "<p>Select the Board you want to check.</p>",
+        "isFilterNote": false,
+        "metadata": {
+          "color": "#9138FE"
+        }
+      },
+      {
+        "moduleIds": [
+          33
+        ],
+        "content": "<p>Here you can set the criteria for which pins should be deleted.</p><p></p><p><strong>Important:</strong></p><p>Don't forget to set the same filter setting in the upper path as well!</p>",
+        "isFilterNote": true,
+        "metadata": {
+          "color": "#9138FE"
+        }
+      },
+      {
+        "moduleIds": [
+          12
+        ],
+        "content": "<p>Here you can set the criteria for which pins should be deleted.</p><p></p><p><strong>Important:</strong></p><p>Don't forget to set the same filter setting in the lower path as well!</p>",
+        "isFilterNote": true,
+        "metadata": {
+          "color": "#9138FE"
+        }
+      },
+      {
+        "moduleIds": [
+          24
+        ],
+        "content": "<p>The maximum number of pins that can be processed per board results from the number of \"Repeats\" x number of \"Pins per request\" (usually 250).</p><p>Example: 5 x 250 = 1250 pins / board</p>",
+        "isFilterNote": false,
+        "metadata": {
+          "color": "#9138FE"
+        }
+      },
+      {
+        "moduleIds": [
+          31
+        ],
+        "content": "<p>In case of timeout errors from pinterest, sleep for a while and then resume</p>",
+        "isFilterNote": false,
+        "metadata": {
+          "color": "#9138FE"
+        }
+      },
+      {
+        "moduleIds": [
+          29
+        ],
+        "content": "<p>In case of timeout errors from pinterest, sleep for a while and then resume</p>",
+        "isFilterNote": false,
+        "metadata": {
+          "color": "#9138FE"
+        }
+      },
+      {
+        "moduleIds": [
+          39
+        ],
+        "content": "<p>When no bookmark was given --&gt; Break the Reapeater Loop</p>",
+        "isFilterNote": false,
+        "metadata": {
+          "color": "#9138FE"
+        }
+      }
+    ]
+  }
+}
+```
+
